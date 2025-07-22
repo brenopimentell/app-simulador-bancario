@@ -2,6 +2,10 @@ import streamlit as st
 from datetime import datetime
 import pandas as pd
 
+# Função para formatar valores no padrão BRL
+def formatar_real(valor):
+    return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
 # Inicializa o estado da sessão
 if "saldo" not in st.session_state:
     st.session_state.saldo = 0.0
@@ -34,7 +38,7 @@ if menu == "Depósito":
             st.session_state.saldo += valor_deposito
             agora = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
             st.session_state.extrato.append({"Data": agora, "Tipo": "Depósito", "Valor": valor_deposito})
-            st.success(f"Depósito de R$ {valor_deposito:.2f} realizado com sucesso!")
+            st.success(f"Depósito de {formatar_real(valor_deposito)} realizado com sucesso!")
         else:
             st.error("O valor precisa ser maior que zero.")
 
@@ -59,7 +63,7 @@ elif menu == "Saque":
             agora = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
             st.session_state.extrato.append({"Data": agora, "Tipo": "Saque", "Valor": -valor_saque})
             st.session_state.numero_saques += 1
-            st.success(f"Saque de R$ {valor_saque:.2f} realizado com sucesso!")
+            st.success(f"Saque de {formatar_real(valor_saque)} realizado com sucesso!")
 
 # EXTRATO
 elif menu == "Extrato":
@@ -68,10 +72,10 @@ elif menu == "Extrato":
         st.info("Nenhuma movimentação realizada.")
     else:
         df = pd.DataFrame(st.session_state.extrato)
-        df['Valor'] = df['Valor'].map(lambda x: f"R$ {x:.2f}")
+        df['Valor'] = df['Valor'].map(formatar_real)
         st.dataframe(df, use_container_width=True)
 
-    st.metric("💰 Saldo atual", f"R$ {st.session_state.saldo:.2f}")
+    st.metric("💰 Saldo atual", formatar_real(st.session_state.saldo))
 
     grafico = pd.DataFrame(st.session_state.extrato)
     if not grafico.empty:
